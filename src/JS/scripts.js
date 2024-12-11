@@ -1,3 +1,6 @@
+import '../../src/CSS/styles.css';
+import _ from 'lodash';
+
 const searchButton = document.getElementById('searchButton');
 const resultsContainer = document.getElementById('results');
 const bookDetailsContainer = document.getElementById('bookDetails');
@@ -19,7 +22,13 @@ searchButton.addEventListener('click', async () => {
 
     const data = await response.json();
     try {
-      displayBooks(data.works);
+      // Verifica se la risposta contiene la chiave "works" e se è un array
+      const works = _.get(data, 'works', []);
+      if (!Array.isArray(works) || works.length === 0) {
+        resultsContainer.innerHTML = '<p>No books found for this category.</p>';
+        return;
+      }
+      displayBooks(works);
     } catch (error) {
       resultsContainer.innerHTML = `<p>Error displaying books: ${error.message}</p>`;
     }
@@ -30,22 +39,18 @@ searchButton.addEventListener('click', async () => {
 
 function displayBooks(books) {
   try {
-    if (books.length === 0) {
-      resultsContainer.innerHTML = '<p>No books found for this category.</p>';
-      return;
-    }
-
     resultsContainer.innerHTML = '';
     books.forEach((book) => {
       try {
         const bookItem = document.createElement('div');
         bookItem.classList.add('book-item');
 
-        const title = book.title ? `<strong>${book.title}</strong>` : '<strong>No Title</strong>';
-        const authors = book.authors ? book.authors.map((author) => author.name).join(', ') : 'Unknown Author';
+        // Verifica che il libro abbia un titolo e un autore valido
+        const title = _.get(book, 'title', 'No Title');
+        const authors = _.get(book, 'authors', []).map((author) => author.name).join(', ') || 'Unknown Author';
 
         bookItem.innerHTML = `
-          <span>${title} - ${authors}</span>
+          <span><strong>${title}</strong> - ${authors}</span>
           <button class="details-button" data-key="${book.key}">View Details</button>
         `;
 
@@ -76,6 +81,9 @@ async function fetchBookDetails(bookKey) {
 
     const bookData = await response.json();
     try {
+      // Validazione dei dati ricevuti per i dettagli del libro
+      if (!bookData || !bookData.title) throw new Error('Book data is incomplete.');
+
       displayBookDetails(bookData);
     } catch (error) {
       bookDetailsContainer.innerHTML = `<p>Error displaying book details: ${error.message}</p>`;
@@ -87,12 +95,14 @@ async function fetchBookDetails(bookKey) {
 
 function displayBookDetails(book) {
   try {
-    const description = book.description ? (typeof book.description === 'string' ? book.description : book.description.value) : 'No description available.';
+    // Verifica che la descrizione sia valida
+    const description = _.get(book, 'description', 'No description available.');
+    const descriptionText = typeof description === 'string' ? description : _.get(description, 'value', 'No description available.');
 
     bookDetailsContainer.innerHTML = `
       <h2>Book Details</h2>
       <p><strong>Title:</strong> ${book.title}</p>
-      <p><strong>Description:</strong> ${description}</p>
+      <p><strong>Description:</strong> ${descriptionText}</p>
     `;
   } catch (error) {
     bookDetailsContainer.innerHTML = `<p>Error: ${error.message}</p>`;

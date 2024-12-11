@@ -6,7 +6,6 @@
 ## Funzionalità
 - **Ricerca per categoria**: Inserisci una categoria nel campo di ricerca per ottenere una lista di libri.
 - **Visualizzazione dei dettagli del libro**: Clicca su un libro per visualizzarne i dettagli, inclusi titolo e descrizione.
-- **Gestione degli errori**: L'app gestisce vari tipi di errori, come l'assenza di risultati o errori nella visualizzazione dei dettagli.
 
 ## Tecnologie Utilizzate
 - **JavaScript**: La logica dell'app è implementata in JavaScript.
